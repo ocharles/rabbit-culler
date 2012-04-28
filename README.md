@@ -17,3 +17,23 @@ There are 2 parts to the project:
   events from RabbitMQ and invalidates the cache appropriately.
 
   For now, this is written to do uncaching from the MusicBrainz database.
+
+Dependencies
+============
+
+If you want to play with this, you'll need:
+
+* RabbitMQ, running on the default port with default authentication
+* PostgreSQL with PL/Python support
+* The Python Pika library (http://github.com/pika/pika), version 0.95 (0.96 is
+  *not* supported)
+
+If you want the caching daemon you'll need:
+
+* GHC
+* Haskell libraries:
+  * aeson
+  * containers
+  * amqp
+  * memcached
+
