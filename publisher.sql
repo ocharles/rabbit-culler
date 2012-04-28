@@ -1,4 +1,8 @@
-CREATE OR REPLACE FUNCTION emit_rabbitmq()
+BEGIN;
+
+CREATE SCHEMA rabbitmq;
+
+CREATE OR REPLACE FUNCTION rabbitmq.emit_rabbitmq()
 RETURNS trigger AS $$
 
 import pika
@@ -21,3 +25,12 @@ channel.basic_publish(exchange='musicbrainz',
 connection.close()
 
 $$ LANGUAGE 'plpythonu';
+
+CREATE OR REPLACE FUNCTION rabbitmq.install_rabbitmq(t REGCLASS)
+RETURNS void AS $$
+BEGIN
+    EXECUTE 'CREATE CONSTRAINT TRIGGER emit_rabbitmq AFTER INSERT OR UPDATE OR DELETE ON ' || t || ' DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE PROCEDURE rabbitmq.emit_rabbitmq()';
+END;
+$$ LANGUAGE 'plpgsql';
+
+COMMIT;
