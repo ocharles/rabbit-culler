@@ -60,22 +60,24 @@ event, depending on their presence.
 handleEvent :: (Message, Envelope) -> IO ()
 handleEvent (message, _) = do
   let event = fromJust $ decode $ msgBody message :: Event
-  traverse uncache (oldEvent event)
-  traverse uncache (newEvent event)
-  return ()
+  mapM_ uncache $
+    Set.elems $ Set.fromList $
+      catMaybes [ fmap determineKeys (oldEvent event)
+                , fmap determineKeys (newEvent event)
+                ]
 
 {-| This is what maps a row to a cache key.
 
 Given a row, attempt to extract the cache key from it. -}
-uncache :: Row -> IO ()
-uncache (ArtistType id) = uncache' $ "at:" ++ show id
-uncache (ArtistCredit id) = uncache' $ "ac:" ++ show id
-uncache (Artist id) = uncache' $ "artist:" ++ show id
-uncache (ArtistMBID mbid) = uncache' $ "artist:" ++ mbid
+determineKeys :: Row -> String
+determineKeys (ArtistType id) = "at:" ++ show id
+determineKeys (ArtistCredit id) = "ac:" ++ show id
+determineKeys (Artist id) = "artist:" ++ show id
+determineKeys (ArtistMBID mbid) = "artist:" ++ mbid
 
 {-| Backend logic of actually getting to memcached and doing the uncaching. -}
-uncache' :: String -> IO ()
-uncache' key = do
+uncache :: String -> IO ()
+uncache key = do
   memcached <- MCS.connect "localhost" 11211
   putStrLn $ "Uncaching " ++ key
   void $ MC.delete memcached key 0
