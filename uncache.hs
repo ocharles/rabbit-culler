@@ -27,6 +27,9 @@ data Event = Event { oldEvent :: Maybe Row, newEvent :: Maybe Row }
 
 {-| Represents a row in the database that has changed. -}
 data Row = ArtistType { artistTypeId :: Int }
+         | ArtistCredit { artistCreditId :: Int }
+         | Artist { artistId :: Int }
+         | ArtistMBID { artistMBID :: String }
   deriving (Show)
 
 {- This is where most of the magic happens!
@@ -42,6 +45,10 @@ instance FromJSON (Event) where
     let mapper =
           case tableName of
             "artist_type" -> (\o -> ArtistType <$> o .: "id")
+            "artist_credit" -> (\o -> ArtistCredit <$> o .: "id")
+            "artist_credit_name" -> (\o -> ArtistCredit <$> o .: "artist_credit")
+            "artist" -> (\o -> Artist <$> o .: "id")
+            "artist_gid_redirect" -> (\o -> ArtistMBID <$> o .: "gid")
             _ -> error $ "Unknown table " ++ show tableName
     Event <$> (v .:? "old" >>= traverse mapper)
           <*> (v .:? "new" >>= traverse mapper)
@@ -62,6 +69,9 @@ handleEvent (message, _) = do
 Given a row, attempt to extract the cache key from it. -}
 uncache :: Row -> IO ()
 uncache (ArtistType id) = uncache' $ "at:" ++ show id
+uncache (ArtistCredit id) = uncache' $ "ac:" ++ show id
+uncache (Artist id) = uncache' $ "artist:" ++ show id
+uncache (ArtistMBID mbid) = uncache' $ "artist:" ++ mbid
 
 {-| Backend logic of actually getting to memcached and doing the uncaching. -}
 uncache' :: String -> IO ()
