@@ -3,6 +3,7 @@ RETURNS trigger AS $$
 
 import pika
 import json
+import time
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
 channel = connection.channel()
@@ -13,7 +14,8 @@ channel.basic_publish(exchange='musicbrainz',
                       body=json.dumps({
                           'table': TD["table_name"],
                           'new': TD["new"],
-			  'old': TD["old"]
+                          'old': TD["old"],
+                          'timestamp': str(time.time())
                       }))
 
 connection.close()
