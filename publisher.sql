@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION invalidate_blog_post()
+CREATE OR REPLACE FUNCTION emit_rabbitmq()
 RETURNS trigger AS $$
 
 import pika
