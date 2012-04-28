@@ -74,7 +74,7 @@ handleEvent (message, _) = do
                   , fmap determineKeys (newEvent event)
                   ]
   now <- getCurrentTime
-  print $ "Lag: " ++ show (diffUTCTime now $ eventTimestamp event)
+  putStrLn $ "Lag: " ++ show (diffUTCTime now $ eventTimestamp event)
 
 {-| This is what maps a row to a cache key.
 
